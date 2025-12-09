@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
 import { createSolanaRpc, createSolanaRpcSubscriptions } from "@solana/kit";
+import { sepolia, base, baseSepolia, mainnet } from "viem/chains";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -13,6 +14,8 @@ createRoot(document.getElementById("root")!).render(
       appId={import.meta.env.VITE_PRIVY_APP_ID!}
       config={{
         loginMethods: ["email", "google", "wallet"],
+        defaultChain: sepolia,
+        supportedChains: [sepolia, mainnet, base, baseSepolia],
         embeddedWallets: {
           ethereum: {
             createOnLogin: "users-without-wallets",

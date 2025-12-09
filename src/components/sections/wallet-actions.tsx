@@ -74,6 +74,20 @@ const WalletActions = () => {
   const isEvmWallet = selectedWallet?.type === "ethereum";
   const isSolanaWallet = selectedWallet?.type === "solana";
 
+  const handleCopyAddress = async () => {
+    if (!selectedWallet) {
+      showErrorToast("Please select a wallet");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(selectedWallet.address);
+      showSuccessToast(`Address copied: ${selectedWallet.address.slice(0, 10)}...`);
+    } catch (error) {
+      console.log(error);
+      showErrorToast("Failed to copy address");
+    }
+  };
+
   const handleSignMessageEvm = async () => {
     if (!isEvmWallet || !selectedWallet) {
       showErrorToast("Please select an Ethereum wallet");
@@ -349,6 +363,11 @@ const WalletActions = () => {
   };
 
   const availableActions = [
+    {
+      name: "Copy address",
+      function: handleCopyAddress,
+      disabled: !selectedWallet,
+    },
     {
       name: "Sign message (EVM)",
       function: handleSignMessageEvm,

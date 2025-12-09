@@ -6,6 +6,7 @@ import { Header } from "./components/ui/header";
 import CreateAWallet from "./components/sections/create-a-wallet";
 import UserObject from "./components/sections/user-object";
 import { ArrowLeftIcon } from "@heroicons/react/16/solid";
+import EmailLookup from "./components/sections/email-lookup";
 import FundWallet from "./components/sections/fund-wallet";
 import LinkAccounts from "./components/sections/link-accounts";
 import UnlinkAccounts from "./components/sections/unlink-accounts";
@@ -13,6 +14,7 @@ import WalletActions from "./components/sections/wallet-actions";
 import SessionSigners from "./components/sections/session-signers";
 import WalletManagement from "./components/sections/wallet-management";
 import MFA from "./components/sections/mfa";
+import ChainSwitcher from "./components/sections/chain-switcher";
 
 function App() {
   const { ready, authenticated, logout, login } = usePrivy();
@@ -31,13 +33,15 @@ function App() {
             </button>
 
             <div>
-              <CreateAWallet />
+              <ChainSwitcher />
+              <WalletActions />
               <FundWallet />
+              <CreateAWallet />
               <LinkAccounts />
               <UnlinkAccounts />
-              <WalletActions />
               <SessionSigners />
               <WalletManagement />
+              <EmailLookup />
               <MFA />
             </div>
           </div>

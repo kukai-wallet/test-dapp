@@ -8,12 +8,14 @@ import Section from "../reusables/section";
 
 import { useFundWallet as useFundWalletSolana } from "@privy-io/react-auth/solana";
 import type { Hex } from "viem";
-import { showErrorToast } from "../ui/custom-toast";
+import { showErrorToast, showSuccessToast } from "../ui/custom-toast";
+import { sepolia, baseSepolia } from "viem/chains";
 
 type WalletInfo = {
   address: string;
   type: "ethereum" | "solana";
   name: string;
+  chainId?: string;
 };
 
 const FundWallet = () => {
@@ -27,6 +29,7 @@ const FundWallet = () => {
       address: wallet.address,
       type: "ethereum" as const,
       name: wallet.address,
+      chainId: wallet.chainId,
     }));
 
     const solanaWallets: WalletInfo[] = walletsSolana.map((wallet) => ({
@@ -51,8 +54,8 @@ const FundWallet = () => {
   const fundWalletEvmHandler = (
     asset?:
       | {
-          erc20: Hex;
-        }
+        erc20: Hex;
+      }
       | "USDC"
       | "native-currency"
   ) => {
@@ -92,18 +95,60 @@ const FundWallet = () => {
     }
   };
 
+  const getCurrentChainId = (): number | null => {
+    if (!selectedWallet || !selectedWallet.chainId) return null;
+    const chainIdStr = selectedWallet.chainId.toString();
+    return chainIdStr.includes(":")
+      ? Number(chainIdStr.split(":")[1])
+      : Number(chainIdStr);
+  };
+
+  const getFaucetUrl = (): string | null => {
+    const chainId = getCurrentChainId();
+    if (!chainId) return null;
+
+    // Map chain IDs to faucet URLs
+    const faucetUrls: Record<number, string> = {
+      [sepolia.id]: "https://faucet.quicknode.com/ethereum/sepolia",
+      [baseSepolia.id]: "https://faucet.quicknode.com/base/sepolia",
+    };
+
+    return faucetUrls[chainId] || null;
+  };
+
+  const openFaucet = () => {
+    const faucetUrl = getFaucetUrl();
+    if (!faucetUrl) {
+      showErrorToast("No faucet available for this network");
+      return;
+    }
+    window.open(faucetUrl, "_blank", "noopener,noreferrer");
+    showSuccessToast("Opening faucet in new tab");
+  };
+
+  const isTestnet = (): boolean => {
+    const chainId = getCurrentChainId();
+    if (!chainId) return false;
+    return chainId === sepolia.id || chainId === baseSepolia.id;
+  };
+
   const availableActions = [
+    {
+      name: "Go to Faucet",
+      function: openFaucet,
+      disabled: !isEvmWallet || !isTestnet(),
+    },
     {
       name: "Fund ETH",
       function: fundWalletEvmHandler,
-      disabled: !isEvmWallet,
+      disabled: true,
     },
     {
       name: "Fund USDC (EVM)",
       function: () => {
         fundWalletEvmHandler("USDC");
       },
-      disabled: !isEvmWallet,
+      disabled: true,
     },
     {
       name: "Fund SOL",
@@ -122,7 +167,7 @@ const FundWallet = () => {
     <Section
       name="Fund wallet"
       description={
-        "Fund wallet using a card, exchange, or external wallet. Privy has bridging integration out of the box powered by Relay reservoir."
+        "Fund wallet using a card, exchange, or external wallet. For testnets (ETH Sepolia, Base Sepolia), use the faucet button to get free testnet tokens."
       }
       filepath="src/components/sections/fund-wallet"
       actions={availableActions}
